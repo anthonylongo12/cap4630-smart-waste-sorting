@@ -11,7 +11,6 @@ from PIL import Image
 MODEL_PATH = Path("models/waste_classifier.keras")
 CLASS_MAP_PATH = Path("models/class_names.json")
 IMG_SIZE = 224
-LOW_CONFIDENCE_THRESHOLD = 0.60
 
 DISPOSAL_GUIDANCE = {
     "plastic": "Place in plastics recycling bin if clean and dry.",
@@ -37,7 +36,6 @@ def load_model_and_classes():
 def preprocess_image(pil_image):
     image = pil_image.convert("RGB").resize((IMG_SIZE, IMG_SIZE))
     arr = np.array(image).astype(np.float32)
-    arr = tf.keras.applications.mobilenet_v2.preprocess_input(arr)
     arr = np.expand_dims(arr, axis=0)
     return arr
 
@@ -73,11 +71,6 @@ def main():
     st.subheader("Prediction")
     st.write(f"**Class:** `{top_class}`")
     st.write(f"**Confidence:** `{confidence:.2%}`")
-
-    if confidence < LOW_CONFIDENCE_THRESHOLD:
-        st.warning(
-            "Low-confidence prediction. Recommended action: send this image for manual review."
-        )
 
     guidance = DISPOSAL_GUIDANCE.get(top_class, "Follow local disposal guidelines.")
     st.info(f"Disposal guidance: {guidance}")
